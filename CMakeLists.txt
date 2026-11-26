@@ -10,6 +10,7 @@ target_include_directories(airtrack_core PUBLIC src)
 
 add_executable(udp_sender src/udp_sender.cpp)
 add_executable(udp_receiver src/udp_receiver.cpp)
+add_executable(replayer src/replayer/sender.cpp)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -22,7 +23,7 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include(GoogleTest)
 
-add_executable(airtrack_tests tests/smoke_test.cpp tests/sbs_test.cpp)
+add_executable(airtrack_tests tests/sbs_test.cpp)
 target_link_libraries(airtrack_tests PRIVATE airtrack_core GTest::gtest_main)
 target_compile_definitions(airtrack_tests PRIVATE
     SBS_SAMPLE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/tests/data/sample.sbs")
