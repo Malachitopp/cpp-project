@@ -9,11 +9,13 @@
 #include <string>
 #include <charconv>
 #include <cstring>
+#include <chrono>
+#include <thread> 
 
 int main(int argc, char* argv[])
 {
-    if (argc != 3) {
-        std::cerr << "usage: replayer <file> <port>\n";
+    if (argc != 4) {
+        std::cerr << "usage: replayer <file> <port> <speed> \n";
         return 1;
     }
 
@@ -24,6 +26,16 @@ int main(int argc, char* argv[])
         std::cerr << "invalid port: " << argv[2] << '\n';
         return 1;
     }
+
+    const char* speed_end = argv[3] + std::strlen(argv[3]);
+    std::uint16_t speed {};
+    auto [speedEnd, error] = std::from_chars(argv[3], speed_end, speed);
+    if (error != std::errc{} || speedEnd != speed_end || speed <= 0 ) {
+        std::cerr << "invalid speed" << argv[3] << '\n';
+        return 1;
+    }
+
+
 
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
@@ -69,9 +81,21 @@ int main(int argc, char* argv[])
 
     std::string line;
 
+    
+    std::int64_t base_rate = 200;
+
+    std::chrono::nanoseconds interval {1'000'000'000 / (base_rate * speed)};
+
+    std::int64_t counter {};
+
+    auto start = std::chrono::steady_clock::now();
 
     while ( std::getline(infile, line, '\n'))
     {
+
+        auto due_time = start + counter * interval;
+        std::this_thread::sleep_until(due_time);
+
         line.push_back('\n');
         auto bytes = send(client, line.data(), line.size(), 0);
         if (bytes == -1) {
@@ -79,7 +103,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-
+        ++counter;
     }
     close(fd);
     close(client);
