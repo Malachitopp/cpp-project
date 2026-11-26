@@ -11,6 +11,8 @@ target_include_directories(airtrack_core PUBLIC src)
 add_executable(udp_sender src/udp_sender.cpp)
 add_executable(udp_receiver src/udp_receiver.cpp)
 add_executable(replayer src/replayer/sender.cpp)
+add_executable(publisher src/replayer/receiver.cpp)
+target_link_libraries(publisher PRIVATE airtrack_core)
 
 include(FetchContent)
 FetchContent_Declare(
