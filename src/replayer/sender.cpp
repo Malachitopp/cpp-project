@@ -90,17 +90,26 @@ int main(int argc, char* argv[])
 
     auto start = std::chrono::steady_clock::now();
 
+
     while ( std::getline(infile, line, '\n'))
     {
-
+        
         auto due_time = start + counter * interval;
         std::this_thread::sleep_until(due_time);
 
+        std::size_t sent {};
+        
         line.push_back('\n');
-        auto bytes = send(client, line.data(), line.size(), 0);
-        if (bytes == -1) {
-            std::perror("send");
-            return 1;
+
+        while ( sent < line.size() ) {
+        
+            auto bytes = send(client, line.data() + sent , line.size() - sent, 0);
+            if (bytes == -1) {
+                std::perror("send");
+                return 1;
+            }
+
+            sent += static_cast<std::size_t>(bytes);
         }
 
         ++counter;
